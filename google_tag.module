@@ -59,7 +59,10 @@ function google_tag_page_attachments(&$attachments) {
       // @see drupal_get_js() in 7.x core.
       // For inline JavaScript to validate as XHTML, all JavaScript containing
       // XHTML needs to be wrapped in CDATA.
-      $attachments['#attached']['html_head'][] = _google_tag_inline_tag($type, $weight++);
+      $attachment = _google_tag_inline_tag($type, $weight++);
+      if (!empty($attachment)) {
+        $attachments['#attached']['html_head'][] = $attachment;
+      }
     }
   }
 }
