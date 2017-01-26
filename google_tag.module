@@ -285,11 +285,6 @@ function google_tag_save_snippets() {
   $result = TRUE;
   $snippets = google_tag_snippets();
   foreach ($snippets as $type => $snippet) {
-    // Check if the private js folder exists, if not create it.
-    $js_path = 'public://js';
-    if (!file_exists($js_path)) {
-      if (file_prepare_directory($js_path, FILE_CREATE_DIRECTORY));
-    }
     $path = file_unmanaged_save_data($snippet, "public://js/google_tag.$type.js", FILE_EXISTS_REPLACE);
     $result = !$path ? FALSE : $result;
   }
