@@ -288,9 +288,10 @@ function google_tag_save_snippets() {
     // Check if the private js folder exists, if not create it.
     $js_path = 'public://google_tag/js';
     if (!file_exists($js_path)) {
-      if (file_prepare_directory($js_path, FILE_CREATE_DIRECTORY));
+      if (file_prepare_directory($js_path, FILE_CREATE_DIRECTORY)) {
+        $path = file_unmanaged_save_data($snippet, "public://js/google_tag.$type.js", FILE_EXISTS_REPLACE);
+      }
     }
-    $path = file_unmanaged_save_data($snippet, "public://js/google_tag.$type.js", FILE_EXISTS_REPLACE);
     $result = !$path ? FALSE : $result;
   }
   if (!$path) {
