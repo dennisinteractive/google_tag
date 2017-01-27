@@ -258,7 +258,7 @@ class GoogleTagSettingsForm extends ConfigFormBase {
     parent::submitForm($form, $form_state);
 
     if (google_tag_save_snippets()) {
-      drupal_set_message(t('Created three snippet files based on configuration.'));
+      drupal_set_message(t('Created js snippet files based on configuration.'));
     }
   }
 
