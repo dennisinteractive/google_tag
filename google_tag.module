@@ -303,6 +303,7 @@ function google_tag_save_snippets() {
     else {
       $unsaved = TRUE;
     }
+
   }
   if ($unsaved) {
     drupal_set_message(t('An error occurred saving one or more snippet files. Please try again or contact the site administrator if it persists.'));
