@@ -42,29 +42,16 @@ function _google_tag_script_snippet() {
 
   // Build script snippet.
   $script = <<<EOS
-(function(w,d,s,l,i){
-
-  w[l]=w[l]||[];
-  w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});
-  var f=d.getElementsByTagName(s)[0];
-  var j=d.createElement(s);
-  var dl=l!='dataLayer'?'&l='+l:'';
-  j.src='//www.googletagmanager.com/gtm.js?id='+i+dl;
-  j.async=true;
-  f.parentNode.insertBefore(j,f);
-
+(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','$data_layer','$container_id');
 EOS;
   if ($compact) {
     $script = str_replace(array("\n", '  '), '', $script);
   }
-/*
-  $script = <<<EOS
-<!-- Google Tag Manager -->
-$script
-<!-- End Google Tag Manager -->
-EOS;
-*/
+
   return $script;
 }
 
