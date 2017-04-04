@@ -59,7 +59,7 @@ function google_tag_page_attachments(&$attachments) {
       // @see drupal_get_js() in 7.x core.
       // For inline JavaScript to validate as XHTML, all JavaScript containing
       // XHTML needs to be wrapped in CDATA.
-      $attachments['#attached']['html_head'][] = _google_tag_inline_tag($type, $weight++);
+      $attachments['#attached']['html_head'][] = _google_tag_inline_tag('script', $weight++);
     }
   }
 }
@@ -76,7 +76,7 @@ function google_tag_page_attachments(&$attachments) {
  *   The tag array.
  */
 function _google_tag_file_tag($type, $weight) {
-  $uri = "public://js/google_tag.$type.js";
+  $uri = "public://google_tag/js/google_tag.$type.js";
   $url = file_url_transform_relative(file_create_url($uri));
   $query_string = \Drupal::state()->get('system.css_js_query_string') ?: '0';
   $attachment = [
@@ -103,18 +103,17 @@ function _google_tag_file_tag($type, $weight) {
  *   The tag array.
  */
 function _google_tag_inline_tag($type, $weight) {
-  $uri = "public://js/google_tag.$type.js";
+  $uri = "public://google_tag/js/google_tag.$type.js";
   $url = \Drupal::service('file_system')->realpath($uri);
   $contents = @file_get_contents($url);
   $attachment = $contents ? [
     [
-      '#type' => 'html_tag',
-      '#tag' => 'script',
-      '#value' => $contents,
+      '#markup' => '<script>$contents</script>',
       '#weight' => $weight,
     ],
     "google_tag_{$type}_tag",
   ] : [];
+
   return $attachment;
 }
 
@@ -127,7 +126,7 @@ function google_tag_page_top(&$page) {
   }
 
   // Add noscript snippet to page_top region.
-  $uri = 'public://js/google_tag.noscript.js';
+  $uri = 'public://google_tag/js/google_tag.noscript.js';
   $url = \Drupal::service('file_system')->realpath($uri);
   $contents = @file_get_contents($url);
 
