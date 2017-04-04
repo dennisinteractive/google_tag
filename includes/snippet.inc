@@ -28,7 +28,7 @@ function google_tag_snippets() {
 /**
  * Returns JavaScript script snippet.
  *
- * @return array
+ * @return string
  *   The script snippet.
  */
 function _google_tag_script_snippet() {
@@ -40,16 +40,15 @@ function _google_tag_script_snippet() {
   $data_layer = trim(json_encode($data_layer), '"');
   $compact = $config->get('compact_snippet');
 
-  // Build script snippet.
-  $script = <<<EOS
-(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  if ($compact) {
+    $script = '!function(a,b,c,d,e){a[d]=a[d]||[],a[d].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var f=b.getElementsByTagName(c)[0],g=b.createElement(c),h="dataLayer"!=d?"&l="+d:"";g.async=!0,g.src="https://www.googletagmanager.com/gtm.js?id="+e+h,f.parentNode.insertBefore(g,f)}(window,document,"script","' . $data_layer . '","' . $container_id . '");';
+  }
+  else {
+    $script = "(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','$data_layer','$container_id');
-EOS;
-  if ($compact) {
-    $script = str_replace(array("\n", '  '), '', $script);
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','{$data_layer}','{$container_id}');";
   }
 
   return $script;
