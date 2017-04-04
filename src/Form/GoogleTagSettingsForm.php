@@ -277,11 +277,13 @@ class GoogleTagSettingsForm extends ConfigFormBase {
     }
     if (!$path) {
       drupal_set_message(t('An error occurred saving one or more snippet files. Please try again or contact the site administrator if it persists.'));
+      return FALSE;
     }
     else {
       drupal_set_message(t('Created three snippet files based on configuration.'));
       \Drupal::service('asset.js.collection_optimizer')->deleteAll();
       _drupal_flush_css_js();
+      return TRUE;
     }
   }
 
@@ -305,4 +307,5 @@ class GoogleTagSettingsForm extends ConfigFormBase {
     }
     return $text;
   }
+
 }

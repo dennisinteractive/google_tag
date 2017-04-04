@@ -24,6 +24,11 @@ const GOOGLE_TAG_EXCLUDE_LISTED = 'exclude listed';
 const GOOGLE_TAG_INCLUDE_LISTED = 'include listed';
 
 /**
+ * Directory to output scripts.
+ */
+const GOOGLE_TAG_DIR = 'public://google_tag/js';
+
+/**
  * Implements hook_help().
  */
 function google_tag_help($route_name, RouteMatchInterface $route_match) {
@@ -59,7 +64,10 @@ function google_tag_page_attachments(&$attachments) {
       // @see drupal_get_js() in 7.x core.
       // For inline JavaScript to validate as XHTML, all JavaScript containing
       // XHTML needs to be wrapped in CDATA.
-      $attachments['#attached']['html_head'][] = _google_tag_inline_tag('script', $weight++);
+      $attachment = _google_tag_inline_tag($type, $weight++);
+      if (!empty($attachment)) {
+        $attachments['#attached']['html_head'][] = $attachment;
+      }
     }
   }
 }
@@ -76,7 +84,7 @@ function google_tag_page_attachments(&$attachments) {
  *   The tag array.
  */
 function _google_tag_file_tag($type, $weight) {
-  $uri = "public://google_tag/js/google_tag.$type.js";
+  $uri = _google_tag_get_js_dir() . "/google_tag.$type.js";
   $url = file_url_transform_relative(file_create_url($uri));
   $query_string = \Drupal::state()->get('system.css_js_query_string') ?: '0';
   $attachment = [
@@ -103,7 +111,7 @@ function _google_tag_file_tag($type, $weight) {
  *   The tag array.
  */
 function _google_tag_inline_tag($type, $weight) {
-  $uri = "public://google_tag/js/google_tag.$type.js";
+  $uri = _google_tag_get_js_dir() . "/google_tag.$type.js";
   $url = \Drupal::service('file_system')->realpath($uri);
   $contents = @file_get_contents($url);
   $attachment = $contents ? [
@@ -126,7 +134,7 @@ function google_tag_page_top(&$page) {
   }
 
   // Add noscript snippet to page_top region.
-  $uri = 'public://google_tag/js/google_tag.noscript.js';
+  $uri = _google_tag_get_js_dir() . '/google_tag.noscript.js';
   $url = \Drupal::service('file_system')->realpath($uri);
   $contents = @file_get_contents($url);
 
@@ -267,4 +275,59 @@ function _google_tag_role_check() {
     }
   }
   return $satisfied;
+}
+
+/**
+ * Saves JS snippet files based on current settings.
+ *
+ * @return bool
+ *   TRUE if at least some of the files were saved.
+ *   This doesn't mean they were all saved.
+ */
+function google_tag_save_snippets() {
+  // Save the altered snippets after hook_google_tag_snippets_alter().
+  module_load_include('inc', 'google_tag', 'includes/snippet');
+
+  // If there is more than one snippet some may be saved and some may fail.
+  $saved = FALSE; $unsaved = FALSE;
+  $dir = _google_tag_get_js_dir();
+  $snippets = google_tag_snippets();
+  foreach ($snippets as $type => $snippet) {
+    if ($dir_exists = file_prepare_directory($dir, FILE_CREATE_DIRECTORY)) {
+      $path = file_unmanaged_save_data($snippet, "{$dir}/google_tag.{$type}.js", FILE_EXISTS_REPLACE);
+    }
+    if ($dir_exists === TRUE && $path !== FALSE) {
+      $saved = TRUE;
+    }
+    else {
+      $unsaved = TRUE;
+    }
+
+  }
+  if ($unsaved) {
+    drupal_set_message(t('An error occurred saving one or more snippet files. Please try again or contact the site administrator if it persists.'));
+  }
+  if ($saved) {
+    \Drupal::service('asset.js.collection_optimizer')->deleteAll();
+    _drupal_flush_css_js();
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * Implements hook_rebuild().
+ */
+function google_tag_rebuild() {
+  google_tag_save_snippets();
+}
+
+/**
+ * Get's the public directory for storing google_tag files
+ */
+function _google_tag_get_js_dir() {
+  $dir = GOOGLE_TAG_DIR;
+  // Allow other modules to alter the directory.
+  \Drupal::moduleHandler()->alter('google_tag_dir', $dir);
+  return $dir;
 }
