@@ -116,7 +116,9 @@ function _google_tag_inline_tag($type, $weight) {
   $contents = @file_get_contents($url);
   $attachment = $contents ? [
     [
-      '#markup' => '<script>$contents</script>',
+      '#type' => 'html_tag',
+      '#tag' => 'script',
+      '#value' => $contents,
       '#weight' => $weight,
     ],
     "google_tag_{$type}_tag",
