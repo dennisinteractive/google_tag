@@ -118,13 +118,12 @@ function _google_tag_data_layer_snippet() {
   $classes = [];
   $names = ['whitelist', 'blacklist'];
   foreach ($names as $name) {
-    $$name = explode("\n", $$name);
     if (empty($$name)) {
       continue;
     }
+    $$name = explode("\n", $$name);
     $classes["gtm.$name"] = $$name;
   }
-
   if ($classes) {
     // Build data layer snippet.
     $script = "var $data_layer = [" . json_encode($classes) . '];';
