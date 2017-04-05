@@ -257,8 +257,33 @@ class GoogleTagSettingsForm extends ConfigFormBase {
 
     parent::submitForm($form, $form_state);
 
-    if (google_tag_save_snippets()) {
-      drupal_set_message(t('Created js snippet files based on configuration.'));
+    $this->saveSnippets();
+  }
+
+  /**
+   * Saves JS snippet files based on current settings.
+   *
+   * @return bool
+   *   Whether the files were saved.
+   */
+  public function saveSnippets() {
+    // Save the altered snippets after hook_google_tag_snippets_alter().
+    module_load_include('inc', 'google_tag', 'includes/snippet');
+    $result = TRUE;
+    $snippets = google_tag_snippets();
+    foreach ($snippets as $type => $snippet) {
+      $path = file_unmanaged_save_data($snippet, "public://google_tag/js/google_tag.$type.js", FILE_EXISTS_REPLACE);
+      $result = !$path ? FALSE : $result;
+    }
+    if (!$path) {
+      drupal_set_message(t('An error occurred saving one or more snippet files. Please try again or contact the site administrator if it persists.'));
+      return FALSE;
+    }
+    else {
+      drupal_set_message(t('Created three snippet files based on configuration.'));
+      \Drupal::service('asset.js.collection_optimizer')->deleteAll();
+      _drupal_flush_css_js();
+      return TRUE;
     }
   }
 
@@ -282,4 +307,5 @@ class GoogleTagSettingsForm extends ConfigFormBase {
     }
     return $text;
   }
+
 }

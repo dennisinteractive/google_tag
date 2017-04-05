@@ -123,6 +123,7 @@ function _google_tag_inline_tag($type, $weight) {
     ],
     "google_tag_{$type}_tag",
   ] : [];
+
   return $attachment;
 }
 
