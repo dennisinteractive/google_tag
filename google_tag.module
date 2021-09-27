@@ -12,6 +12,8 @@
 
 use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\Messenger\MessengerInterface;
 
 /**
  * Default for matching all items except listed.
@@ -293,9 +295,11 @@ function google_tag_save_snippets() {
   $saved = FALSE; $unsaved = FALSE;
   $dir = _google_tag_get_js_dir();
   $snippets = google_tag_snippets();
+  /** @var \Drupal\Core\File\FileSystemInterface $fileSystem */
+  $fileSystem = \Drupal::service('file_system');
   foreach ($snippets as $type => $snippet) {
-    if ($dir_exists = file_prepare_directory($dir, FILE_CREATE_DIRECTORY)) {
-      $path = file_unmanaged_save_data($snippet, "{$dir}/google_tag.{$type}.js", FILE_EXISTS_REPLACE);
+    if ($dir_exists = $fileSystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY)) {
+      $path = $fileSystem->saveData($snippet, "{$dir}/google_tag.{$type}.js", FileSystemInterface::EXISTS_REPLACE);
     }
     if ($dir_exists === TRUE && $path !== FALSE) {
       $saved = TRUE;
@@ -306,7 +310,10 @@ function google_tag_save_snippets() {
 
   }
   if ($unsaved) {
-    drupal_set_message(t('An error occurred saving one or more snippet files. Please try again or contact the site administrator if it persists.'));
+    \Drupal::messenger()->addMessage(
+      t('An error occurred saving one or more snippet files. Please try again or contact the site administrator if it persists.'),
+      MessengerInterface::TYPE_STATUS
+    );
   }
   if ($saved) {
     \Drupal::service('asset.js.collection_optimizer')->deleteAll();
